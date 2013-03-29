@@ -19,7 +19,7 @@ test:
   timeout: 5000
 
 production:
-  adapter: postgres
+  adapter: postgresql
   database: d3cecop1qekka0
   username: ornorlymwgrbfx
   password: fQFXFLugXBOSrohaXVAUXaQY44
