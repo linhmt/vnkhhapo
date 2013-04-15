@@ -130,7 +130,7 @@ describe "User pages" do
       end
     end
 
-    describe "delete links" do
+    describe "delete links for Admin only" do
 
       it { should_not have_link('delete') }
 
