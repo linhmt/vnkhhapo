@@ -37,9 +37,21 @@ describe "Authentication" do
       it { should have_link('Sign out', href: signout_path) }
       it { should_not have_link('Sign in', href: signin_path) }
     
-      describe "followed by signout" do
+      describe "followed by signout, Sign in link available, but no Profile or Settings" do
         before { click_link "Sign out" }
         it { should have_link('Sign in') }
+        it { should_not have_link('Profile', href: user_path(user)) }
+        it { should_not have_link('Settings', href: edit_user_path(user)) }
+      end
+
+      describe "should redirect to root_path if access sign_up path" do
+        before { get signup_path }        
+        specify { response.should redirect_to(root_path) }          
+      end
+
+      describe "should redirect to root_path if access sign_up path" do
+        before { post users_path(@user) }        
+        specify { response.should redirect_to(root_path) }
       end
     end
   end
@@ -81,6 +93,19 @@ describe "Authentication" do
           specify { response.should redirect_to(signin_path) }
         end
       end
+
+      describe "in the Posts controller" do
+
+        describe "submitting to the create action" do
+          before { post posts_path }
+          specify { response.should redirect_to(signin_path) }
+        end
+
+        describe "submitting to the destroy action" do
+          before { delete post_path(FactoryGirl.create(:post)) }
+          specify { response.should redirect_to(signin_path) }
+        end
+      end
     end
 
     describe "as wrong user" do
@@ -109,6 +134,6 @@ describe "Authentication" do
         before { delete user_path(user) }
         specify { response.should redirect_to(root_path) }        
       end
-    end
+    end   
   end
 end

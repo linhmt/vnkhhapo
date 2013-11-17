@@ -28,6 +28,8 @@ describe User do
   it { should respond_to(:remember_token) }
   it { should respond_to(:admin) }
   it { should respond_to(:authenticate) }
+  it { should respond_to(:posts) }
+  it { should respond_to(:feed) }
 
   it { should be_valid }
   it { should_not be_admin }
@@ -129,6 +131,48 @@ describe User do
       
       it { should_not == user_for_invalid_password }
       specify { user_for_invalid_password.should be_false }
+    end
+
+    describe "accessible attributes" do
+      it "should not allow access to admin" do
+        expect do
+          User.new(:admin => true)        
+        end.to raise_error(ActiveModel::MassAssignmentSecurity::Error)
+      end    
+    end
+  end
+
+  describe "post associations" do
+
+    before { @user.save }
+    let!(:older_post) do 
+      FactoryGirl.create(:post, user: @user, created_at: 1.day.ago)
+    end
+    let!(:newer_post) do
+      FactoryGirl.create(:post, user: @user, created_at: 1.hour.ago)
+    end
+
+    it "should have the right posts in the right order" do
+      @user.posts.should == [newer_post, older_post]
+    end
+
+    describe "status" do
+      let(:unfollowed_post) do
+        FactoryGirl.create(:post, user: FactoryGirl.create(:user))
+      end
+
+      its(:feed) { should include(newer_post)}
+      its(:feed) { should include(older_post)}
+      its(:feed) { should_not include(unfollowed_post)}
+    end
+
+    it "should destroy associated posts" do
+      posts = @user.posts.dup
+      @user.destroy
+      posts.should_not be_empty
+      posts.each do |post|
+        Post.find_by_id(post.id).should be_nil
+      end
     end
   end
 end
